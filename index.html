@@ -109,7 +109,22 @@ onAuthStateChanged(auth,async(user)=>{
 
 <!-- App code loaded from jsDelivr CDN (GitHub) -->
 
-<script type="text/babel" data-presets="react" src="https://cdn.jsdelivr.net/gh/swling50-cpu/architect-planner@main/app.js"></script>
+<script>
+// After Babel loads, fetch and transform app.js
+window.addEventListener('load', function() {
+  fetch('https://cdn.jsdelivr.net/gh/swling50-cpu/architect-planner@main/app.js')
+    .then(r => r.text())
+    .then(code => {
+      const transformed = Babel.transform(code, {presets: ['react']}).code;
+      const script = document.createElement('script');
+      script.textContent = transformed;
+      document.body.appendChild(script);
+    })
+    .catch(e => {
+      document.getElementById('loading').innerHTML = '<div style="color:#e57373;padding:20px;text-align:center">載入失敗，請重新整理頁面<br><small>'+e.message+'</small></div>';
+    });
+});
+</script>
 
 </body>
 </html>
