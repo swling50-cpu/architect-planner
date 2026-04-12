@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+
+<html><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Debug3 - CDN測試</title>
+<style>
+body{font-family:sans-serif;padding:20px;background:#f9f7f4}
+.step{padding:8px 12px;margin:4px 0;border-radius:6px;font-size:13px}
+.ok{background:#d4edda;color:#155724}
+.err{background:#f8d7da;color:#721c24}
+.wait{background:#fff3cd;color:#856404}
+</style>
+</head>
+<body>
+<h2 style="color:#C8956C;margin-bottom:16px">CDN 連線測試</h2>
+<div id="log"></div>
+<script>
+function log(msg,type){var d=document.createElement('div');d.className='step '+(type||'wait');d.textContent=msg;document.getElementById('log').appendChild(d);}
+
+function testCDN(name, url, cb){
+log(‘測試 ‘+name+’…’,‘wait’);
+var s=document.createElement(‘script’);
+var done=false;
+s.onload=function(){if(!done){done=true;log(‘✓ ‘+name+’ 載入成功’,‘ok’);cb(true);}};
+s.onerror=function(){if(!done){done=true;log(‘✗ ‘+name+’ 載入失敗’,‘err’);cb(false);}};
+setTimeout(function(){if(!done){done=true;log(‘✗ ‘+name+’ 超時’,‘err’);cb(false);}},8000);
+s.src=url;
+document.head.appendChild(s);
+}
+
+// Test different CDNs for React
+var cdns=[
+[‘cdnjs React’,‘https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js’],
+[‘cdnjs ReactDOM’,‘https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js’],
+[‘cdnjs Babel’,‘https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js’],
+];
+
+var idx=0;
+function next(){
+if(idx>=cdns.length){
+log(‘測試完成！’,‘ok’);
+if(typeof React!==‘undefined’&&typeof Babel!==‘undefined’){
+log(‘所有函式庫載入成功，可以使用！’,‘ok’);
+} else {
+log(‘部分函式庫載入失敗’,‘err’);
+}
+return;
+}
+var c=cdns[idx++];
+testCDN(c[0],c[1],function(){next();});
+}
+next();
+</script>
+
+</body></html>
