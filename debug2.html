@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+
+<html><head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Debug2</title>
+<style>
+body{font-family:sans-serif;padding:20px;background:#f9f7f4}
+.step{padding:8px 12px;margin:4px 0;border-radius:6px;font-size:13px}
+.ok{background:#d4edda;color:#155724}
+.err{background:#f8d7da;color:#721c24}
+.wait{background:#fff3cd;color:#856404}
+</style>
+</head>
+<body>
+<h2 style="color:#C8956C;margin-bottom:16px">診斷 v2</h2>
+<div id="log"></div>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<script>
+function log(msg,type){var d=document.createElement('div');d.className='step '+(type||'wait');d.textContent=msg;document.getElementById('log').appendChild(d);}
+
+var checks=0;
+function poll(){
+checks++;
+log(‘檢查 #’+checks+’: Babel=’+(typeof Babel)+’ React=’+(typeof React),‘wait’);
+if(typeof Babel!==‘undefined’&&typeof React!==‘undefined’){
+log(‘所有函式庫就緒！開始測試…’,‘ok’);
+testAll();
+} else if(checks<30){
+setTimeout(poll,500);
+} else {
+log(‘超時：函式庫未能載入’,‘err’);
+}
+}
+
+function testAll(){
+// Test 1: Simple Babel
+try{
+var r=Babel.transform(’<div>Hello</div>’,{presets:[‘react’]});
+log(‘✓ 簡單 JSX 編譯成功’,‘ok’);
+}catch(e){log(’✗ 簡單編譯失敗: ’+e.message,‘err’);return;}
+
+// Test 2: Timing for larger code
+var big=’’;
+for(var i=0;i<50;i++) big+=‘function f’+i+’(){return <div key={’+i+’}>test</div>;}’;
+var t0=Date.now();
+try{
+Babel.transform(big,{presets:[‘react’]});
+log(’✓ 中型編譯完成，耗時 ’+(Date.now()-t0)+‘ms’,‘ok’);
+}catch(e){log(’✗ 中型編譯失敗: ’+e.message,‘err’);return;}
+
+// Test 3: React render
+try{
+var div=document.createElement(‘div’);
+document.body.appendChild(div);
+var root=ReactDOM.createRoot(div);
+root.render(React.createElement(‘p’,null,‘React 渲染成功！’));
+log(‘✓ React 渲染成功’,‘ok’);
+}catch(e){log(’✗ React 渲染失敗: ’+e.message,‘err’);}
+
+log(‘診斷完成！’,‘ok’);
+}
+
+setTimeout(poll, 300);
+</script>
+
+</body></html>
